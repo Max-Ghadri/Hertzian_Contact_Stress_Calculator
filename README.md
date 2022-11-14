@@ -4,4 +4,4 @@ It is known that when two bodies with curved surfaces come into contact under a 
 
 The contact stress calculator has been designed to calculate contact pressure and contact stress for three types of contact(Sphere on Plane, Sphere on Sphere, and Cylinder on Cylinder). And the outputs are: Maximum Hertzian contact pressure[Pmax], Max shear stress[taumax], Depth of max shear stress [zm], and Circular contact area diameter [a]
 
-Note: The code is written in Python.
+Note: The programming language is Python.
