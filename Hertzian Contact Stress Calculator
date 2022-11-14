@@ -1,0 +1,296 @@
+#@title Hertzian Contact Stress Calculator
+
+#----------------------------------------------
+# Libraries
+import ipywidgets as widgets # interactive HTML widgets for Jupyter notebooks and the IPython kernel
+from ipywidgets import HBox, VBox
+from IPython.display import display, clear_output
+import datetime
+
+#----------------------------------------------
+# General styling
+dropdown_style = {'width': '60px'}
+
+#----------------------------------------------
+# Model selection
+model_options = [
+    'Sphere on Plane',       # 0 
+    'Sphere on Sphere',      # 1
+    'Cylinder on Cylinder'   # 2
+]
+model = widgets.RadioButtons(
+    options=model_options,
+)
+model_hbox = widgets.HBox( [widgets.Label('Model:'), model] )
+
+#----------------------------------------------
+# Materials Same/different
+materials_options = [
+    'the same',   # 0 
+    'different',  # 1
+]
+materials = widgets.RadioButtons(
+    options=materials_options,
+)
+materials_hbox = widgets.HBox( [widgets.Label('What about the materials? They are:'), materials] )
+
+#----------------------------------------------
+# FN: Normal load
+FN_unit_options = [
+    'N',    # 0 
+    'KN',   # 1
+    'lbf'   # 2
+]
+FN_widget = widgets.Text(
+    layout=widgets.Layout(width="100px") # 50px or 4%
+)
+FN_unit_widget = widgets.Dropdown(
+    options=FN_unit_options,
+    layout=widgets.Layout(width=dropdown_style["width"]) # 50px or 4%
+)
+FN_hbox = widgets.HBox( [widgets.Label('FN'), FN_widget, widgets.Label('Unit'), FN_unit_widget] )
+#----------------------------------------------
+# R, R1, and R2
+R_unit_options = [
+    'mm',   # 0 
+    'cm',   # 1
+    'm',    # 2
+    'in',   # 3
+    'ft'    # 4
+]
+R_widget = widgets.Text(
+    layout=widgets.Layout(width="100px") # 50px or 4%
+)
+R_unit_widget = widgets.Dropdown(
+    options=R_unit_options,
+    layout=widgets.Layout(width=dropdown_style["width"]) # 50px or 4%
+)
+R_hbox = widgets.HBox( [widgets.Label('R'), R_widget, widgets.Label('Unit'), R_unit_widget] )
+
+R1_widget = widgets.Text(
+    layout=widgets.Layout(width="100px") # 50px or 4%
+)
+R1_unit_widget = widgets.Dropdown(
+    options=R_unit_options,
+    layout=widgets.Layout(width=dropdown_style["width"]) # 50px or 4%
+)
+R1_hbox = widgets.HBox( [widgets.Label('R1'), R1_widget, widgets.Label('Unit'), R1_unit_widget] )
+
+R2_widget = widgets.Text(
+    layout=widgets.Layout(width="100px") # 50px or 4%
+)
+R2_unit_widget = widgets.Dropdown(
+    options=R_unit_options,
+    layout=widgets.Layout(width=dropdown_style["width"]) # 50px or 4%
+)
+R2_hbox = widgets.HBox( [widgets.Label('R2'), R2_widget, widgets.Label('Unit'), R2_unit_widget] )
+
+#----------------------------------------------
+# E, E1, E2, v1, and v2
+E_unit_options = [
+    'Pa',    # 0 
+    'GPa',   # 1
+    'ksi'    # 2
+]
+E_widget = widgets.Text(
+    layout=widgets.Layout(width="100px") # 50px or 4%
+)
+E_unit_widget = widgets.Dropdown(
+    options=E_unit_options,
+    layout=widgets.Layout(width=dropdown_style["width"]) # 50px or 4%
+)
+E_hbox = widgets.HBox( [widgets.Label('E'), E_widget, widgets.Label('Unit'), E_unit_widget] )
+
+E1_widget = widgets.Text(
+    layout=widgets.Layout(width="100px") # 50px or 4%
+)
+E1_unit_widget = widgets.Dropdown(
+    options=E_unit_options,
+    layout=widgets.Layout(width=dropdown_style["width"]) # 50px or 4%
+)
+E1_hbox = widgets.HBox( [widgets.Label('E1'), E1_widget, widgets.Label('Unit'), E1_unit_widget] )
+
+E2_widget = widgets.Text(
+    layout=widgets.Layout(width="100px") # 50px or 4%
+)
+E2_unit_widget = widgets.Dropdown(
+    options=E_unit_options,
+    layout=widgets.Layout(width=dropdown_style["width"]) # 50px or 4%
+)
+E2_hbox = widgets.HBox( [widgets.Label('E2'), E2_widget, widgets.Label('Unit'), E2_unit_widget] )
+
+v1_widget = widgets.Text(
+    layout=widgets.Layout(width="100px") # 50px or 4%
+)
+v1_unit_widget = widgets.Dropdown(
+    options=E_unit_options,
+    layout=widgets.Layout(width=dropdown_style["width"]) # 50px or 4%
+)
+v1_hbox = widgets.HBox( [widgets.Label('v1'), v1_widget, widgets.Label('Unit'), v1_unit_widget] )
+
+v2_widget = widgets.Text(
+    layout=widgets.Layout(width="100px") # 50px or 4%
+)
+v2_unit_widget = widgets.Dropdown(
+    options=E_unit_options,
+    layout=widgets.Layout(width=dropdown_style["width"]) # 50px or 4%
+)
+v2_hbox = widgets.HBox( [widgets.Label('v2'), v2_widget, widgets.Label('Unit'), v2_unit_widget] )
+
+#----------------------------------------------
+# l
+l_unit_options = [
+    'mm',   # 0 
+    'cm',   # 1
+    'm',    # 2
+    'in',   # 3
+    'ft'    # 4
+]
+l_widget = widgets.Text(
+    layout=widgets.Layout(width="100px") # 50px or 4%
+)
+l_unit_widget = widgets.Dropdown(
+    options=l_unit_options,
+    layout=widgets.Layout(width=dropdown_style["width"]) # 50px or 4%
+)
+l_hbox = widgets.HBox( [widgets.Label('l'), l_widget, widgets.Label('Unit'), l_unit_widget] )
+
+#----------------------------------------------
+
+# Results widget
+results_btn = widgets.Button(
+    description='Calcualte Results',
+    disabled=False,
+    button_style='info',
+    tooltip='Click me',
+    icon='check'
+)
+#----------------------------------------------
+
+def on_choices_update(typ='change'):
+    with out:
+        clear_output()
+        print('The selection is for "{}" model and with "{}" materials'.format(model.value, materials.value)) ; print()
+        
+        display( FN_hbox ) ; print()
+        
+        if(materials.value == materials_options[0]):
+            display(E_hbox)
+        elif(materials.value != materials_options[0]):
+            display(E1_hbox)
+            display(E2_hbox)  
+            display(v1_hbox)
+            display(v2_hbox)  
+        print()        
+           
+        if(model.value == model_options[0]):
+            display(R_hbox)
+        elif(model.value != model_options[0]):
+            display(R1_hbox)
+            display(R2_hbox)  
+        print() 
+
+        if(model.value == model_options[2]):
+            display(l_hbox)
+        print()
+
+model.observe(on_choices_update, names='value')
+materials.observe(on_choices_update, names='value')
+
+out = widgets.Output()
+
+display( model_hbox ) 
+display( materials_hbox ) 
+#i = widgets.interactive(print_city, country=countryW, city=cityW)
+with out:
+    print('The selection is for "{}" and with "{}" materials'.format(model.value, materials.value)) ; print()
+    display( FN_hbox ) ; print()
+    display(R_hbox)
+    display(E_hbox)
+    print()
+
+display(out)
+
+out2 = widgets.Output()
+display(results_btn)
+display(out2)
+
+def calculations(model, FN, E, R, R1, R2, l):
+    if (model.value == model_options[0]):
+        a = 1.11 * ( (FN*R)/E )**(1/3)
+        Pmax = -0.388 * ( (FN * E**2) / R**2 )**(1/3)
+        taumax = 0.31 * Pmax
+        zm = 0.47 * a
+
+    elif(model.value == model_options[1]):
+            a = 1.11 * ( (FN / E) * ( (R1*R2)/(R1+R2) ) ) ** (1/3)
+            Pmax = -0.388 * ( FN * E**2 * ((R1+R2)/(R1*R2))**2 )**(1/3)
+            taumax = 0.31 * Pmax
+            zm = 0.47 * a
+
+    elif(model.value == model_options[2]):
+            a = 1.52 * ( (FN * R1 * R2) / E * l * (R1+R2) )** (1/2)
+            Pmax = -0.418 * ((FN/l) * E * ((R1+R2)/(R1*R2)))**(1/2)
+            taumax = 0.30 * Pmax
+            zm = 0.78 * a
+    
+    print( "{0:6s} = {1:10.5f} {2:3s}".format("a", a, "m"))
+    print( "{0:6s} = {1:10.5f} {2:3s}".format("Pmax", Pmax, "Pa"))
+    print( "{0:6s} = {1:10.5f} {2:3s}".format("taumax", taumax, "Pa"))
+    print( "{0:6s} = {1:10.5f} {2:3s}".format("zm", zm, "m"))
+
+def calculate_results(results_btn):
+    with out2:
+        clear_output()
+        print("Calculating ...")
+        print('The selection is for "{}" model and with "{}" materials'.format(model.value, materials.value)) ; print()
+      
+        #----------------------------------------------
+        # Dictionary
+        unit_dict = {
+            "N"  : 1,          # N 
+            "KN" : 10e+3,      # KN to N
+            "lbf": 4.44822,    # lbf to N
+          
+            "Pa" : 1,          # Pa
+            "GPa": 10e+6,      # GPa to Pa
+            "ksi": 6.895e+6,   # ksi to Pa  
+          
+            "m"  : 1,          # meter
+            "cm" : 100,        # centimeter to meter
+            "mm" : 10e+3,      # millimeter to meter
+            "in" : 0.0254,     # in to meter
+            "ft" : 0.304785,   # ft meter
+        }
+        #----------------------------------------------
+        # Coefficients
+        FN = FN_widget.value
+        E  =  E_widget.value 
+        E1 = E1_widget.value 
+        E2 = E2_widget.value 
+        v1 = v1_widget.value
+        v2 = v2_widget.value
+        R  =  R_widget.value 
+        R1 = R1_widget.value 
+        R2 = R2_widget.value 
+        l  =  l_widget.value 
+
+        if (FN_widget.value != ''): FN = float( FN_widget.value) * unit_dict[FN_unit_widget.value]
+        if ( E_widget.value != ''): E  = float(  E_widget.value) * unit_dict[ E_unit_widget.value]
+        if (E1_widget.value != ''): E1 = float( E1_widget.value) * unit_dict[E1_unit_widget.value]
+        if (E2_widget.value != ''): E2 = float( E2_widget.value) * unit_dict[E2_unit_widget.value]
+        if (v1_widget.value != ''): v1 = float( v1_widget.value)
+        if (v2_widget.value != ''): v2 = float( v2_widget.value)
+        if ( R_widget.value != ''): R  = float(  R_widget.value) * unit_dict[ R_unit_widget.value]
+        if (R1_widget.value != ''): R1 = float( R1_widget.value) * unit_dict[R1_unit_widget.value]
+        if (R2_widget.value != ''): R2 = float( R2_widget.value) * unit_dict[R2_unit_widget.value]
+        if ( l_widget.value != ''): l  = float(  l_widget.value) * unit_dict[ l_unit_widget.value]
+        #----------------------------------------------
+        # If & Calculations
+        if (materials.value == materials_options[1]):
+            Eprime = 1 / ( ( (1-(v1**2)) / E1) + ( (1-(v2**2)) / E2) ) # if E1!=E2
+            E= Eprime
+
+        return calculations(model, FN, E, R, R1, R2, l)
+
+results_btn.on_click(calculate_results)        
